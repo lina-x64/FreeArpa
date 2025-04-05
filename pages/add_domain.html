@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="form-group">
+        <h2>your generated domain:</h2>
+        <div id="domain-display">{{ domain }}</div>
+        <a href='{{ url_for("add_domain") }}'><button type="button">regenerate domain</button></a>
+    </div>
+
+    <form method="POST">
+        <input type="hidden" name="domain" value="{{ domain }}">
+        <input type="hidden" name="key" value="{{ key }}">
+
+        <div class="form-group">
+            <h3>enter nameservers (at least one required):</h3>
+            {% for i in range(1, 6) %}
+                <div class="ns-input">
+                    <label for="ns{{ i }}"></label><input type="text" name="ns{{ i }}" placeholder="ns{{ i }}.example.com" {% if i == 1 %}required{% endif %}>
+                </div>
+            {% endfor %}
+            <p>
+                you can add your domain for example at <a href="https://dash.cloudflare.com/">cloudflare</a>,
+                which is kinda the only way of getting a free SSL certificate for ip6.arpa domains. please read
+                <a href="{{ url_for('cf_ssl') }}">this</a> for more information.
+            </p>
+        </div>
+        <input type="hidden" name="key" value="{{ key }}">
+
+        <button type="submit">save domain!</button>
+    </form>
+
+    <div class="nav">
+        <a href="{{ url_for('account') }}">back to account</a>
+    </div>
+{% endblock %}

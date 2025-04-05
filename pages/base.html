@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Free .arpa domains!{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="description" content="A free IPv6 subdomain service maintained by a 17-year-old student from Niedersachsen">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>free ip6.arpa domains</h1>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+
+        <footer>
+            <p>free ip6.arpa — made with ♥ by dami</p>
+            <p style="font-size: 11px;">i'm a 17-year-old student maintaining this service completely for free</p>
+            
+            <div class="donation-section">
+                <p><strong>if you like this service, please consider supporting me:</strong></p>
+                <div class="donation-options">
+                    <a href="https://www.paypal.com/donate/?hosted_button_id=TW4BL9HQK5TLJ" target="_blank">paypal</a> |
+                    <a href="https://ko-fi.com/damcraft" target="_blank">ko-fi</a>
+                </div>
+                <details>
+                    <summary>crypto donations</summary>
+                    <div class="crypto-donations">
+                        <p><strong>xmr:</strong> <code style="font-size: 10px; word-break: break-all;">89LWJ7qZzqKRDs1AunkgrijDvCTQ7taVofH6yqGgVFMg8Z6y66RZvbSGYt5B5eUVdJRnLz4UoJ7fPFr3251br72HFPi2Q2V</code></p>
+                        <p><strong>btc:</strong> <code style="font-size: 10px;">bc1qqrqp6j064pr6u0u30qvnalfgm7unwcegf42nc0</code></p>
+                    </div>
+                </details>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <a href="https://damcraft.de" target="_blank">damcraft.de</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

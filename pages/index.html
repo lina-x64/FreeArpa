@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="form-group">
+        <h2>hey! welcome to freearpa.damcraft.de! ^_^</h2>
+
+        <div class="personal-note" style="background-color: #ffefef; border: 2px dashed #ff9999; padding: 10px; border-radius: 8px; margin: 15px 0;">
+            <p><strong>a note from me</strong></p>
+            <p>
+                i thought it was quite silly that people can use a reverse DNS domain like any other domain; zhe issue is
+                that it's rather challenging to get control over such a zone.
+                so I made this little site to give anyone who wants their own little ip6.arpa domain a chance to get one!
+            </p>
+            <p>
+                i maintain this service completely for free, no ads or anything, please consider supporting me through the donation options in the footer below c:
+            </p>
+        </div>
+        {% if not user.is_authenticated %}
+            <p>to get started, please register for an account or log in.</p>
+        {% else %}
+            <p>welcome back, {{ user.username }}!</p>
+        {% endif %}
+    </div>
+
+    {% if not user.is_authenticated %}
+        <div class="form-group" style="text-align: center; margin: 40px 0;">
+            <div style="margin: 20px 0;">
+                <a href="{{ url_for('login') }}"><button style="font-size: 16px; padding: 8px 20px;">log in</button></a>
+                <a href="{{ url_for('register') }}"><button style="font-size: 16px; padding: 8px 20px;">register</button></a>
+            </div>
+        </div>
+    {% else %}
+        {# go to /accounts #}
+        <div class="form-group" style="text-align: center; margin: 40px 0;">
+            <a href="{{ url_for('account') }}"><button style="font-size: 16px; padding: 8px 20px;">go to my dashboard</button></a>
+        </div>
+    {% endif %}
+
+    <div class="form-group">
+        <h3>what my little service offers:</h3>
+        <ul style="list-style-type: '✦ ';">
+            <li>free IPv6 reverse subdomains (somethinglong.ip6.arpa)</li>
+            <li>full control over your nameservers</li>
+            <li>hopefully easy to manage interface</li>
+            <li>a setup that takes half a second</li>
+            <li>no ads, no tracking, nothing c:</li>
+        </ul>
+    </div>
+
+    <div class="form-group" style="text-align: center; margin-top: 30px;">
+        <p>running servers costs money, so if you find this service useful, please consider <strong>supporting me</strong> through the donation options in the footer below.</p>
+    </div>
+{% endblock %}

@@ -1,0 +1,304 @@
+body {
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    background-color: #ffffcc;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    line-height: 1.4;
+    background-image: url("/assets/bg-pattern.png");
+}
+
+.container {
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 15px;
+    background-color: #fff;
+    border: 3px solid #663399;
+    border-radius: 10px;
+    box-shadow: 5px 5px 0 #663399;
+}
+
+header {
+    background: linear-gradient(to right, #ff00cc, #3333cc);
+    color: #fff;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    border-radius: 5px;
+    text-shadow: 2px 2px 0 #000;
+}
+
+h1, h2, h3 {
+    font-family: "Trebuchet MS", sans-serif;
+    color: #663399;
+    text-shadow: 1px 1px 0 #ccc;
+}
+
+header h1 {
+    color: #fff;
+    margin: 0;
+    font-size: 28px;
+    letter-spacing: 1px;
+}
+
+.banner {
+    background: linear-gradient(to right, #ff6600, #ffcc00);
+    color: #003366;
+    padding: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px dashed #663399;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #9966cc;
+    border-radius: 5px;
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    background-color: #f0f0ff;
+}
+
+button {
+    background: linear-gradient(to bottom, #ff6699, #cc3366);
+    color: white;
+    border: 2px solid #990033;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    margin-right: 5px;
+    font-weight: bold;
+    box-shadow: 2px 2px 0 #990033;
+}
+
+button:hover {
+    background: linear-gradient(to bottom, #ff99cc, #ff6699);
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 #990033;
+}
+
+.nav {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.nav a {
+    color: #663399;
+    text-decoration: none;
+    margin-right: 15px;
+    font-weight: bold;
+}
+
+.nav a:hover {
+    text-decoration: underline;
+    color: #ff6699;
+}
+
+.domain-list {
+    margin: 20px 0;
+}
+
+.domain-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border: 2px dashed #663399;
+    margin-bottom: 8px;
+    background-color: #f0f0ff;
+    border-radius: 5px;
+}
+
+.domain-name {
+    flex-grow: 1;
+    word-break: break-word;
+    font-family: "Courier New", monospace;
+    font-size: 14px;
+    color: #003366;
+    font-weight: bold;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.success {
+    background-color: #ccffcc;
+    border: 2px solid #66cc66;
+    color: #006600;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.error {
+    background-color: #ffcccc;
+    border: 2px solid #cc6666;
+    color: #990000;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+footer {
+    margin-top: 30px;
+    border-top: 2px dashed #663399;
+    padding-top: 10px;
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+}
+
+.ns-input {
+    margin-bottom: 8px;
+}
+
+#domain-display {
+    font-family: "Courier New", monospace;
+    font-size: 18px;
+    padding: 10px;
+    background-color: #e6e6ff;
+    border: 2px solid #9966cc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: bold;
+    color: #330066;
+}
+
+.turnstile-container {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px;
+}
+
+table, th, td {
+    border: 2px solid #9966cc;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background: linear-gradient(to right, #9966cc, #cc99ff);
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2e6ff;
+}
+
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f0f0ff;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #9966cc;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #663399;
+}
+
+
+@keyframes glow {
+    0% {
+        text-shadow: 0 0 10px #ff00cc;
+    }
+    50% {
+        text-shadow: 0 0 20px #ff66ff;
+    }
+    100% {
+        text-shadow: 0 0 10px #ff00cc;
+    }
+}
+
+header h1 {
+    animation: glow 2s infinite;
+}
+
+
+.donation-section {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #fff0f5;
+    border: 2px dashed #ff99cc;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.donation-options {
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.donation-options a {
+    color: #cc3366;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.donation-options a:hover {
+    color: #ff6699;
+    text-decoration: underline;
+}
+
+.crypto-donations {
+    background-color: #f9f9ff;
+    padding: 8px;
+    border-radius: 5px;
+    margin-top: 8px;
+    font-size: 12px;
+    text-align: left;
+}
+
+details {
+    margin: 10px 0;
+    cursor: pointer;
+}
+
+summary {
+    color: #663399;
+    font-weight: bold;
+}
+
+.personal-note {
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    line-height: 1.5;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin: 10px 0;
+}

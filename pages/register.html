@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endblock %}
+
+{% block content %}
+    <h2>register</h2>
+
+    <form method="POST">
+        <div class="form-group">
+            <input type="text" name="username" placeholder="username" required>
+        </div>
+
+        <div class="form-group">
+            <input type="email" name="email" placeholder="email (optional, for recovery)">
+        </div>
+
+        <div class="form-group">
+            <input type="password" name="password" placeholder="password" required autocomplete="new-password" pattern=".{8,}" title="Password must be at least 8 characters long">
+        </div>
+
+        <div class="turnstile-container">
+            <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}"></div>
+        </div>
+
+        <button type="submit">register</button>
+    </form>
+
+    <div class="nav">
+        <a href="{{ url_for('login') }}">already have an account? log in</a>
+        <a href="{{ url_for('index') }}">back to home</a>
+    </div>
+{% endblock %}

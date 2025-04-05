@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>SSL for your domain</h2>
+    <p>
+        after adding your domain on cloudflare, you will see that you can't connect to it over HTTPS.
+    </p>
+    <img src="/assets/ssl-fail.png">
+    <p>
+        this is because cloudflare tris creating a certificate with Google Trust Services — which doesn't support ip6.arpa domains.
+    </p>
+    <img src="/assets/certlist.png">
+    <p>
+        it does create a successful backup certificate with SSL.com, but you can't select it without paying 10$/month.
+    </p>
+    <p>
+        but we can actually just send an API request to cloudflare, and they will do it for free!
+    </p>
+    <p>
+        for that, you only need your zone id, your email, and your api key. you can find your zone id here:
+    </p>
+    <img src="/assets/copy-zoneid.png">
+    <p>
+        then, just below that, click on "Get your API token" and copy your global API key:
+    </p>
+    <img src="/assets/global-api-key.png">
+    <p>
+        now, just run the following command in your terminal:
+    </p>
+    <pre>
+account_email=&lt;your_cf_account_email@gmail.com&gt;
+global_api_key=&lt;your_global_api_key&gt;
+zone_id=&lt;the_zone_id&gt;
+curl -X PATCH -H "X-Auth-Email: $account_email" \
+    -H "X-Auth-Key: $global_api_key" \
+    -H "Content-Type: application/json" \
+    --data '{"enabled":true,"certificate_authority":"ssl_com"}' \
+    https://api.cloudflare.com/client/v4/zones/$zone_id/ssl/universal/settings
+    </pre>
+    <img src="/assets/success.png">
+    <p>
+        and that's it! it should take a few minutes, and then you should be able to connect to your domain over HTTPS!
+    </p>
+    <img src="/assets/pending.png">
+    <img src="/assets/ssl-success.png">
+{% endblock %}
