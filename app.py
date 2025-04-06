@@ -1,3 +1,6 @@
+import datetime
+import secrets
+
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -42,6 +45,16 @@ class Domain(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
 
+class PasswordResetToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(64), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    expiry = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False)
+
+    user = db.relationship("User", backref="reset_tokens")
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -75,6 +88,10 @@ def register():
             flash("username must be between 3 and 50 characters", "danger")
             return redirect(url_for("register"))
 
+        if not username.isalnum():
+            flash("username must be alphanumeric", "danger")
+            return redirect(url_for("register"))
+
         if len(password) < 8:
             flash("password must be at least 8 characters long", "danger")
             return redirect(url_for("register"))
@@ -82,8 +99,7 @@ def register():
         # email validation
         try:
             if email:
-                validate_email(email).normalized  # noqa
-                mail.send_welcome_email(email, username)
+                mail.send_welcome_email(validate_email(email).normalized, username)
         except EmailNotValidError:
             flash("invalid email address", "danger")
             return redirect(url_for("register"))
@@ -157,28 +173,58 @@ def reset_password():
             flash("username or email incorrect", "danger")
             return redirect(url_for("reset_password"))
 
-        status = mail.send_forgot_password_email(user.email, user.username)
+        # rate limiting
+        recent_token = PasswordResetToken.query.filter_by(
+            user_id=user.id,
+            used=False
+        ).order_by(PasswordResetToken.expiry.desc()).first()
+
+        if recent_token and (
+                datetime.datetime.now(datetime.timezone.utc) - (recent_token.expiry - datetime.timedelta(hours=1))
+        ).total_seconds() < 300:
+            # Less than 5 minutes since last request
+            flash("a reset email was recently sent. please wait before requesting another.", "warning")
+            return redirect(url_for("reset_password"))
+
+        # generate new token
+        token = secrets.token_urlsafe(32)
+        expiry = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+
+        # store in db
+        reset_token = PasswordResetToken(
+            token=token,
+            user_id=user.id,
+            expiry=expiry
+        )
+        db.session.add(reset_token)
+        db.session.commit()
+
+        status = mail.send_forgot_password_email(user.email, user.username, token)
         if not status:
             flash("failed to send email! please contact me at freearpa@damcraft.de", "danger")
             return redirect(url_for("reset_password"))
+
         flash("password reset email sent", "success")
         return redirect(url_for("login"))
 
     return render_template("reset_password.html", turnstile_site_key=const.TURNSTILE_SITE_KEY)
 
 
+# Replace the reset_password_token route in app.py
 @app.route("/reset-password/<token>", methods=["GET", "POST"])
 def reset_password_token(token):
-    # validate token
-    username = mail.validate_token(token)
-    if not username:
+    # find and validate token
+    reset_token = PasswordResetToken.query.filter_by(token=token, used=False).first()
+
+    if not reset_token or reset_token.expiry < datetime.datetime.now(datetime.timezone.utc):
         flash("invalid or expired token", "danger")
         return redirect(url_for("reset_password"))
 
-    user = User.query.filter_by(username=username).first()
+    user = User.query.get(reset_token.user_id)
     if not user:
         flash("user not found", "danger")
         return redirect(url_for("reset_password"))
+
     if request.method == "POST":
         password = request.form["password"]
         if len(password) < 8:
@@ -186,12 +232,15 @@ def reset_password_token(token):
             return redirect(url_for("reset_password_token", token=token))
 
         user.password_hash = generate_password_hash(password)
+
+        # mark token as used
+        reset_token.used = True
         db.session.commit()
-        mail.invalidate_token(token)
+
         flash("password reset successfully", "success")
         return redirect(url_for("login"))
 
-    return render_template("set_new_password.html", token=token, username=username)
+    return render_template("set_new_password.html", token=token, username=user.username)
 
 
 @app.route("/logout")
