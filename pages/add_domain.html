@@ -5,6 +5,7 @@
         <h2>your generated domain:</h2>
         <div id="domain-display">{{ domain }}</div>
         <a href='{{ url_for("add_domain") }}'><button type="button">regenerate domain</button></a>
+        <button type="button" onclick="navigator.clipboard.writeText('{{ domain }}')">copy to clipboard</button>
     </div>
 
     <form method="POST">

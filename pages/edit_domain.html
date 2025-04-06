@@ -3,6 +3,7 @@
 {% block content %}
     <h2>edit nameservers</h2>
     <p>domain: <strong>{{ domain.subdomain }}</strong></p>
+    <button type="button" onclick="navigator.clipboard.writeText('{{ domain.subdomain }}')">copy to clipboard</button>
 
     <form method="POST">
         <div class="form-group">

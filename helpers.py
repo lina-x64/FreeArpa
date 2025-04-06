@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 import random
+import threading
 
 import requests
 import const
@@ -40,3 +41,13 @@ def get_subname(full_domain):
 
 def format_ns(ns):
     return ns.rstrip('.') + '.' if ns else None
+
+
+user_locks = {}
+
+
+def get_user_lock(user_id):
+    if user_id not in user_locks:
+        user_locks[user_id] = threading.Lock()
+    return user_locks[user_id]
+

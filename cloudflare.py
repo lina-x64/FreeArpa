@@ -10,7 +10,6 @@ headers = {
 
 def create_ns(subname, records):
     posts = []
-    print(headers)
     for record in records:
         posts.append({
             'type': 'NS',

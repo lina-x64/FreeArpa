@@ -32,6 +32,9 @@
     {% else %}
         <p>you don't have any domains yet. click "add new domain" to create one c:</p>
     {% endif %}
+    <div class="form-group">
+        <p>please read <a href="{{ url_for('cf_ssl') }}">this</a> on how to get a working SSL certificate with cloudflare.</p>
+    </div>
 
     <div class="nav">
         <a href="{{ url_for('index') }}">back to home</a>

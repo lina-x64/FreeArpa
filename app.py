@@ -10,7 +10,8 @@ from email_validator import validate_email, EmailNotValidError
 import const
 import cloudflare
 import mail
-from helpers import validate_turnstile, get_subname, generate_key, get_full_domain, generate_subname, format_ns
+from helpers import validate_turnstile, get_subname, generate_key, get_full_domain, generate_subname, format_ns, \
+    get_user_lock
 
 app = Flask(__name__, template_folder="pages")
 app.config["SECRET_KEY"] = const.FLASK_SECRET_KEY
@@ -260,64 +261,65 @@ def account():
 @app.route("/add-domain", methods=["GET", "POST"])
 @login_required
 def add_domain():
-    if current_user.domains and len(current_user.domains) >= current_user.domain_limit:
-        flash("domain limit reached", "danger")
-        return redirect(url_for("account"))
+    with get_user_lock(current_user.id):
+        if current_user.domains and len(current_user.domains) >= current_user.domain_limit:
+            flash("domain limit reached", "danger")
+            return redirect(url_for("account"))
 
-    if request.method == "POST":
-        ns_servers = [format_ns(request.form.getlist(f"ns{i}")[0]) for i in range(1, 6)]
-        ns_servers = [ns for ns in ns_servers if ns]  # filter out empty nameservers
-        if not ns_servers:
-            flash("at least one nameserver required", "danger")
-            return redirect(url_for("add_domain"))
-
-        # validate nameserver format
-        for ns in ns_servers:
-            if not ns or len(ns) > 255 or not all(part.isalnum() or part in "-_." for part in ns):
-                flash(f"invalid nameserver format: {ns}", "danger")
+        if request.method == "POST":
+            ns_servers = [format_ns(request.form.getlist(f"ns{i}")[0]) for i in range(1, 6)]
+            ns_servers = [ns for ns in ns_servers if ns]  # filter out empty nameservers
+            if not ns_servers:
+                flash("at least one nameserver required", "danger")
                 return redirect(url_for("add_domain"))
 
-        # get the subname from the form
-        subname = None
-        if "domain" in request.form and request.form["domain"].strip():
-            full_domain = request.form["domain"].strip()
-            subname = get_subname(full_domain)
+            # validate nameserver format
+            for ns in ns_servers:
+                if not ns or len(ns) > 255 or not all(part.isalnum() or part in "-_." for part in ns):
+                    flash(f"invalid nameserver format: {ns}", "danger")
+                    return redirect(url_for("add_domain"))
 
-        if not subname:
-            flash("invalid domain name", "danger")
+            # get the subname from the form
+            subname = None
+            if "domain" in request.form and request.form["domain"].strip():
+                full_domain = request.form["domain"].strip()
+                subname = get_subname(full_domain)
+
+            if not subname:
+                flash("invalid domain name", "danger")
+                return redirect(url_for("add_domain"))
+
+            # verify key
+            key = request.form.get("key", "").strip()
+            if not key or len(key) != 43 or key != generate_key(subname):
+                flash("invalid key", "danger")
+                return redirect(url_for("add_domain"))
+
+            full_domain = get_full_domain(subname)
+
+            # check if domain already exists
+            existing_domain = Domain.query.filter_by(subdomain=full_domain).first()
+            if existing_domain:
+                flash("this domain is already registered", "danger")
+                return redirect(url_for("add_domain"))
+
+            response = cloudflare.create_ns(subname, ns_servers)
+
+            if response.ok:
+                domain = Domain(
+                    subdomain=full_domain,
+                    ns_records=[ns.strip(".") for ns in ns_servers],
+                    user_id=current_user.id
+                )
+                db.session.add(domain)
+                db.session.commit()
+                flash("domain created successfully", "success")
+                return redirect(url_for("account"))
+            flash(f"DNS creation failed: {response.text}", "danger")
             return redirect(url_for("add_domain"))
 
-        # verify key
-        key = request.form.get("key", "").strip()
-        if not key or len(key) != 43 or key != generate_key(subname):
-            flash("invalid key", "danger")
-            return redirect(url_for("add_domain"))
-
-        full_domain = get_full_domain(subname)
-
-        # check if domain already exists
-        existing_domain = Domain.query.filter_by(subdomain=full_domain).first()
-        if existing_domain:
-            flash("this domain is already registered", "danger")
-            return redirect(url_for("add_domain"))
-
-        response = cloudflare.create_ns(subname, ns_servers)
-
-        if response.ok:
-            domain = Domain(
-                subdomain=full_domain,
-                ns_records=[ns.strip(".") for ns in ns_servers],
-                user_id=current_user.id
-            )
-            db.session.add(domain)
-            db.session.commit()
-            flash("domain created successfully", "success")
-            return redirect(url_for("account"))
-        flash(f"DNS creation failed: {response.text}", "danger")
-        return redirect(url_for("add_domain"))
-
-    subname, key = generate_subname()
-    return render_template("add_domain.html", domain=get_full_domain(subname), key=key)
+        subname, key = generate_subname()
+        return render_template("add_domain.html", domain=get_full_domain(subname), key=key)
 
 
 @app.route("/edit-domain/<int:domain_id>", methods=["GET", "POST"])
