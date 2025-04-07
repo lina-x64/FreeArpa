@@ -18,5 +18,5 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 
-ZONE_PARTS = ["b", "f", "1", "5", "0", "7", "4", "0", "1", "0", "0", "2", "ip6", "arpa"]
+ZONE_PARTS = ['e', 'f', '1', '5', '0', '7', '4', '0', '1', '0', '0', '2', 'ip6', 'arpa']
 BASE_DOMAIN = ".".join(ZONE_PARTS)
