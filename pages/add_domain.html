@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block head %}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endblock %}
+
 {% block content %}
     <div class="form-group">
         <h2>your generated domain:</h2>
@@ -25,9 +29,12 @@
                 <a href="{{ url_for('cf_ssl') }}">this</a> for more information.
             </p>
         </div>
+        <div class="turnstile-container">
+            <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}"></div>
+        </div>
         <input type="hidden" name="key" value="{{ key }}">
 
-        <button type="submit">save domain!</button>
+        <button type="submit">add domain!</button>
     </form>
 
     <div class="nav">

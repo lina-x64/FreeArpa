@@ -1,5 +1,6 @@
 import datetime
 import secrets
+import time
 
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
@@ -8,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from email_validator import validate_email, EmailNotValidError
 
 import const
-import cloudflare
+import desec
 import mail
 from helpers import validate_turnstile, get_subname, generate_key, get_full_domain, generate_subname, format_ns, \
     get_user_lock
@@ -181,7 +182,7 @@ def reset_password():
         ).order_by(PasswordResetToken.expiry.desc()).first()
 
         if recent_token and (
-                datetime.datetime.now(datetime.timezone.utc) - (recent_token.expiry - datetime.timedelta(hours=1))
+                datetime.datetime.now() - (recent_token.expiry - datetime.timedelta(hours=1))
         ).total_seconds() < 300:
             # Less than 5 minutes since last request
             flash("a reset email was recently sent. please wait before requesting another.", "warning")
@@ -189,7 +190,7 @@ def reset_password():
 
         # generate new token
         token = secrets.token_urlsafe(32)
-        expiry = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+        expiry = datetime.datetime.now() + datetime.timedelta(hours=1)
 
         # store in db
         reset_token = PasswordResetToken(
@@ -217,7 +218,7 @@ def reset_password_token(token):
     # find and validate token
     reset_token = PasswordResetToken.query.filter_by(token=token, used=False).first()
 
-    if not reset_token or reset_token.expiry < datetime.datetime.now(datetime.timezone.utc):
+    if not reset_token or reset_token.expiry < datetime.datetime.now():
         flash("invalid or expired token", "danger")
         return redirect(url_for("reset_password"))
 
@@ -262,11 +263,18 @@ def account():
 @login_required
 def add_domain():
     with get_user_lock(current_user.id):
+
         if current_user.domains and len(current_user.domains) >= current_user.domain_limit:
             flash("domain limit reached", "danger")
             return redirect(url_for("account"))
 
         if request.method == "POST":
+            # validate captcha
+            captcha = request.form.get("cf-turnstile-response")
+            if not validate_turnstile(captcha, request.remote_addr):
+                flash("CAPTCHA verification failed", "danger")
+                return redirect(url_for("add_domain"))
+
             ns_servers = [format_ns(request.form.getlist(f"ns{i}")[0]) for i in range(1, 6)]
             ns_servers = [ns for ns in ns_servers if ns]  # filter out empty nameservers
             if not ns_servers:
@@ -303,7 +311,7 @@ def add_domain():
                 flash("this domain is already registered", "danger")
                 return redirect(url_for("add_domain"))
 
-            response = cloudflare.create_ns(subname, ns_servers)
+            response = desec.create_ns(subname, ns_servers)
 
             if response.ok:
                 domain = Domain(
@@ -314,12 +322,16 @@ def add_domain():
                 db.session.add(domain)
                 db.session.commit()
                 flash("domain created successfully", "success")
+                time.sleep(1)  # wait for DNS propagation
                 return redirect(url_for("account"))
             flash(f"DNS creation failed: {response.text}", "danger")
             return redirect(url_for("add_domain"))
 
         subname, key = generate_subname()
-        return render_template("add_domain.html", domain=get_full_domain(subname), key=key)
+        return render_template(
+            "add_domain.html",
+            domain=get_full_domain(subname),
+            key=key, turnstile_site_key=const.TURNSTILE_SITE_KEY)
 
 
 @app.route("/edit-domain/<int:domain_id>", methods=["GET", "POST"])
@@ -333,7 +345,7 @@ def edit_domain(domain_id):
     if request.method == "POST":
         new_ns = [format_ns(request.form.getlist(f"ns{i}")[0]) for i in range(1, 6)]
         new_ns = [ns for ns in new_ns if ns]  # filter out empty
-        print(new_ns)
+
         if not new_ns:
             flash("at least one nameserver required", "danger")
             return redirect(url_for("edit_domain", domain_id=domain.id))
@@ -345,7 +357,7 @@ def edit_domain(domain_id):
                 return redirect(url_for("edit_domain", domain_id=domain.id))
 
         subname = domain.subdomain.removesuffix(f".{const.BASE_DOMAIN}")
-        response = cloudflare.update_ns(subname, new_ns)
+        response = desec.update_ns(subname, new_ns)
 
         if response.ok:
             domain.ns_records = [ns.strip(".") for ns in new_ns]
@@ -366,7 +378,7 @@ def delete_domain(domain_id):
         return redirect(url_for("account"))
 
     subname = domain.subdomain.removesuffix(f".{const.BASE_DOMAIN}")
-    response = cloudflare.update_ns(subname, [])
+    response = desec.update_ns(subname, [])
 
     if response.ok:
         db.session.delete(domain)

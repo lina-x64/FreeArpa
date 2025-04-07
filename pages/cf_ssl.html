@@ -35,8 +35,7 @@ curl -X PATCH -H "X-Auth-Email: $account_email" \
     -H "X-Auth-Key: $global_api_key" \
     -H "Content-Type: application/json" \
     --data '{"enabled":true,"certificate_authority":"ssl_com"}' \
-    https://api.cloudflare.com/client/v4/zones/$zone_id/ssl/universal/settings
-    </pre>
+    https://api.cloudflare.com/client/v4/zones/$zone_id/ssl/universal/settings</pre>
     <img src="/assets/success.png">
     <p>
         and that's it! it should take a few minutes, and then you should be able to connect to your domain over HTTPS!

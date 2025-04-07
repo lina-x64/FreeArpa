@@ -44,10 +44,12 @@ def format_ns(ns):
 
 
 user_locks = {}
+global_lock = threading.Lock()
 
 
 def get_user_lock(user_id):
-    if user_id not in user_locks:
-        user_locks[user_id] = threading.Lock()
-    return user_locks[user_id]
+    with global_lock:
+        if user_id not in user_locks:
+            user_locks[user_id] = threading.Lock()
+        return user_locks[user_id]
 

@@ -10,7 +10,7 @@
     </div>
 
     <div class="action-buttons">
-        <a href="{{ url_for('add_domain') }}"><button>add new domain</button></a>
+        <a href="{{ url_for('add_domain') }}"><button>get new domain</button></a>
         <a href="{{ url_for('logout') }}"><button>logout</button></a>
     </div>
 
@@ -30,7 +30,7 @@
             {% endfor %}
         </div>
     {% else %}
-        <p>you don't have any domains yet. click "add new domain" to create one c:</p>
+        <p>you don't have any domains yet. click "get new domain" to create one c:</p>
     {% endif %}
     <div class="form-group">
         <p>please read <a href="{{ url_for('cf_ssl') }}">this</a> on how to get a working SSL certificate with cloudflare.</p>
