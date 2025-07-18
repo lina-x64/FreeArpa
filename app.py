@@ -203,7 +203,7 @@ def reset_password():
 
         status = mail.send_forgot_password_email(user.email, user.username, token)
         if not status:
-            flash("failed to send email! please contact me at freearpa@damcraft.de", "danger")
+            flash("failed to send email! please contact me at freearpa@lina.sh", "danger")
             return redirect(url_for("reset_password"))
 
         flash("password reset email sent", "success")
